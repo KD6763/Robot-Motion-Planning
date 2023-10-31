@@ -76,17 +76,18 @@ def create_obstacles(num_obstacles: int, coord_range: tuple):
     partitions = partition(num_obstacles)
     x_splits = [50] + sorted(random.sample(range(101, coord_range[0] - 1),
                                           partitions[0] - 1)) + [coord_range[0]]
-    y_splits = [50] + sorted(random.sample(range(101, coord_range[1] - 1),
-                                          partitions[1] - 1)) + [coord_range[1]]
     partition_areas = []
     for i in range(len(x_splits) - 1):
+        y_splits = [50] + sorted(random.sample(range(101, coord_range[1] - 1),
+                                               partitions[1] - 1)) + [
+            coord_range[1]]
         for j in range(len(y_splits) - 1):
             partition_areas += [((x_splits[i], x_splits[i + 1]),
                                  (y_splits[j], y_splits[j + 1]))]
-    print(partition_areas)
+    # print(partition_areas)
     obstacles = []
     for area in partition_areas:
-        num_points = random.randint(4, 10)
+        num_points = random.randint(4, 5)
         points = [(random.randint(area[0][0], area[0][1]), random.randint(
             area[1][0], area[1][1])) for i in range(num_points)]
         obstacle = graham_scan(num_points, points)
@@ -132,7 +133,7 @@ def main():
     num_obstacles = 6
     coord_range = (950, 950)
     obstacles = create_obstacles(num_obstacles, coord_range)
-    print(obstacles)
+    # print(obstacles)
     plot_output(obstacles)
 
 
