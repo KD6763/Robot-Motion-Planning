@@ -11,6 +11,7 @@ import sys
 import math as m
 import random
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 
 
 def partition(num_partitions: int):
@@ -58,6 +59,30 @@ def half_hull(points: list):
     return stack
 
 
+def polar_angle(point: tuple, centroid: tuple):
+    """
+    Get the polar angle of point with respect to centroid
+    :param point: input point
+    :param centroid: calculated centroid for inputs
+    :return: float polar angle
+    """
+    return m.atan2(point[1] - centroid[1], point[0] - centroid[0])
+
+
+def sort_counter_clockwise(points: list):
+    """
+    Sort the given points in counter clockwise order
+    :param points: input points
+    :return: points in counter clockwise order
+    """
+    centroid_x = (sum(x for x, y in points)) / len(points)
+    centroid_y = (sum(y for x, y in points)) / len(points)
+    centroid = (centroid_x, centroid_y)
+    counter_clockwise = sorted(points, key=lambda point: polar_angle(point,
+                                                                centroid))
+    return counter_clockwise
+
+
 def graham_scan(num_points: int, points: list):
     """
     Creates convex hull using graham scan algorithm
@@ -72,7 +97,8 @@ def graham_scan(num_points: int, points: list):
     return convex_hull[::-1]
 
 
-def create_obstacles(num_obstacles: int, coord_range: tuple):
+def create_obstacles(num_obstacles: int, coord_range: tuple, convex: bool =
+True):
     partitions = partition(num_obstacles)
     x_splits = [50] + sorted(random.sample(range(101, coord_range[0] - 1),
                                           partitions[0] - 1)) + [coord_range[0]]
@@ -84,13 +110,14 @@ def create_obstacles(num_obstacles: int, coord_range: tuple):
         for j in range(len(y_splits) - 1):
             partition_areas += [((x_splits[i], x_splits[i + 1]),
                                  (y_splits[j], y_splits[j + 1]))]
-    # print(partition_areas)
     obstacles = []
     for area in partition_areas:
-        num_points = random.randint(4, 5)
+        num_points = random.randint(4, 10)
         points = [(random.randint(area[0][0], area[0][1]), random.randint(
             area[1][0], area[1][1])) for i in range(num_points)]
-        obstacle = graham_scan(num_points, points)
+        obstacle = sort_counter_clockwise(points)
+        if convex:
+            obstacle = graham_scan(num_points, points)
         obstacles.append(obstacle)
     return obstacles
 
@@ -102,19 +129,20 @@ def plot_output(obstacles: list):
     :param convex_hull: convex hull
     :return: None
     """
-
     fig, ax = plt.subplots()
     ax.set_title("Environment")
     for obstacle in obstacles:
-        points_x = [point[0] for point in obstacle] + [obstacle[0][0]]
-        points_y = [point[1] for point in obstacle] + [obstacle[0][1]]
-        ax.plot(points_x, points_y, c='k')
+        random_color = "#{:02X}{:02X}{:02X}".format(random.randint(1, 255),
+                                                    random.randint(1, 255),
+                                                    255)
+        polygon = patches.Polygon(obstacle, closed=True, edgecolor='black',
+                                  facecolor=random_color)
+        ax.add_patch(polygon)
     ax.scatter([0], [0], c='r', label="Start")
     ax.scatter([1000], [1000], c='g', label="Destination")
     ax.scatter([0], [0], c='b', label="Point Robot", marker='*', s=10)
     ax.set_xlabel("X")
     ax.set_ylabel("Y")
-    # ax.set_aspect('equal')
     ax.set_aspect('equal', adjustable='box')
     ax.legend(bbox_to_anchor=(1.0, 1), loc='upper left', fontsize=7)
     plt.tight_layout()
@@ -130,9 +158,10 @@ def main():
     # if len(inputs) < 2:
     #     print("Sorry not possible")
     # num_obstacles = int(inputs[1])
-    num_obstacles = 6
+    num_obstacles = 10
     coord_range = (950, 950)
-    obstacles = create_obstacles(num_obstacles, coord_range)
+    convex = True
+    obstacles = create_obstacles(num_obstacles, coord_range, convex)
     # print(obstacles)
     plot_output(obstacles)
 
