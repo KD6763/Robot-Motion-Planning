@@ -1,3 +1,12 @@
+"""
+file: ShortestPath.py
+description: This program will return the shortest distance from the start point to
+the end point using Dijkshtra Algorithm
+language: python3
+author: Kedar Fitwe, kf3121@rit.edu
+"""
+
+
 import heapq
 import math
 
@@ -73,6 +82,22 @@ def dijkstra(coordinates, start, intermediate_points, end):
             current_point = predecessors[current_point]
         shortest_paths[intermediate_point] = path
         if intermediate_point == end:
-            shortest_path_end = path
+            shortest_path_end[end] = path
 
-    return end_dist, shortest_path_end
+    return distances, shortest_paths
+
+
+def main():
+    """
+    The main function
+    :return: None
+    """
+    start_point = (0, 0)
+    intermediate_points = [(3, 4), (7, 2), (1, 1), (5, 6), (2, 8), (9, 3), (6, 5), (8, 7)]
+    end_point = (8, 7)
+    coordinates = [start_point] + intermediate_points
+    print(dijkstra(coordinates, start_point, intermediate_points, end_point))
+
+
+if __name__ == '__main__':
+    main()  # Calling Main Function
