@@ -1,22 +1,21 @@
 """
-file: app.py.py
-description:
-language: python3
-author: Anurag Kallurwar, ak6491@rit.edu
-"""
+file: app.py
 
-import sys
-import matplotlib
-import sys
+# import the Flask class from the flask module
+from flask import Flask, render_template
 
+# create the application object
+app = Flask(__name__)
 
-def main():
-    """
-    The main function
-    :return: None
-    """
-    print("Hello")
+# use decorators to link the function to a url
+@app.route('/')
+def home():
+    return "Hello, World!"  # return a string
 
+@app.route('/welcome')
+def welcome():
+    return render_template('welcome.html')  # render a template
 
+# start the server with the 'run()' method
 if __name__ == '__main__':
-    main()  # Calling Main Function
+    app.run(debug=True)
