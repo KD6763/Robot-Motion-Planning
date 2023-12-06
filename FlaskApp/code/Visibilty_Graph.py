@@ -7,7 +7,7 @@ import code.helpers as helpers
 
 
 def rotational_plane_sweep(s: Point, t: Point, obstacles: List[Polygon],
-                           verbose=False) -> VisibilityGraph:
+                           verbose=True) -> VisibilityGraph:
     def log_print(*args, **kwargs):
         if verbose:
             print(*args, **kwargs)
@@ -161,6 +161,7 @@ def _visible(origin: Point, p: Point, tree: SortedListWithKey,
         def intersects_with_tree_element():
             nonlocal e
             val = helpers.intersect_point(pw, e)
+            print(e)
             return val is not None and val != p
 
         return False if e and intersects_with_tree_element() else True
@@ -256,6 +257,7 @@ class VisitOrder:
     def __ne__(self, other):
         return not self == other
 
+
     def __gt__(self, other):
         if self.is_cut:
             if other.is_cut:
@@ -272,10 +274,10 @@ class VisitOrder:
                 else:
                     return self.min_angle > other.max_angle
             else:
-                if self.min_angle != other.min_angle:
-                    return self.min_angle > other.min_angle
-                else:
+                if self.min_dist != other.min_dist:
                     return self.min_dist > other.min_dist
+                else:
+                    return self.min_angle > other.min_angle
 
     def __ge__(self, other):
         return self > other or self == other
@@ -296,10 +298,13 @@ class VisitOrder:
                 else:
                     return self.min_angle < other.max_angle
             else:
-                if self.min_angle != other.min_angle:
-                    return self.min_angle < other.min_angle
-                else:
+                if self.min_dist != other.min_dist:
+                    #return self.min_angle < other.min_angle
                     return self.min_dist < other.min_dist
+                else:
+                    #return self.min_dist < other.min_dist
+                    return self.min_angle < other.min_angle
+
 
     def __le__(self, other):
         return self < other or self == other

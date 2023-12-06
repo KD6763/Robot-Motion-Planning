@@ -1,9 +1,10 @@
 import base64
 from datetime import datetime
 from io import BytesIO
-from flask import Flask
 from matplotlib.figure import Figure
-from flask import render_template
+import json
+from flask import Flask
+from flask import render_template, request, jsonify
 
 import code.simulate as s
 
@@ -11,8 +12,8 @@ app = Flask(__name__)
 
 
 @app.route("/")
-def home():
-    return "Hello, Flask!"
+def index():
+    return render_template("index.html")
 
 
 @app.route("/hello/")
@@ -45,11 +46,17 @@ def sim():
     path = s.simulate()
     return str(path)
 
-@app.route("/generate/")
-def sim():
+
+@app.route("/generate", methods=['POST'])
+def genreate():
     # Generate the figure **without using pyplot**.
-    path = s.simulate()
-    return str(path)
+    data = request.json
+    print(data)
+    start, end, polygons, obstacles = s.setup_env()
+    path, obstacles, simplified_edges = s.simulate(start, end, polygons, obstacles)
+    result = [data, json.loads(obstacles), json.loads(simplified_edges), json.loads(path)]
+    print(result)
+    return result
 
 
 @app.route("/test/")

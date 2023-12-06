@@ -189,7 +189,7 @@ class Polygon:
         :param line: A line segment
         :return: A set of Coordinate of impact points, or None if there are none.
         """
-        import helpers
+        import code.helpers as helpers
         return helpers.impact_points(self, line)
 
 

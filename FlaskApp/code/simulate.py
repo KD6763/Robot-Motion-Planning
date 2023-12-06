@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import random
 from code.ShortestPath import dijkstra
+import json
 random.seed(77)
 
 
@@ -18,13 +19,14 @@ def setup_env():
 
 
 def gen_visibility_graph(start, end, polygons):
-    visibility_graph = vg.rotational_plane_sweep(start, end, polygons)
-    print(visibility_graph)
-    return visibility_graph
+    visibility_graph = vg.brute_force(start, end, polygons)
+    vg_edges = []
+    for segment in visibility_graph.segments:
+        vg_edges.append(((segment.p1.x, segment.p1.y),(segment.p2.x, segment.p2.y)))
+    return visibility_graph, vg_edges
 
 
 def plot_visibility_graph(visibility_graph, obstacles):
-    # Plot obstacles
     fig, ax = plt.subplots()
     ax.set_title("Environment")
     for obs in obstacles:
@@ -34,11 +36,9 @@ def plot_visibility_graph(visibility_graph, obstacles):
         polygon = patches.Polygon(obs, closed=True, edgecolor='black',
                                   facecolor=random_color)
         ax.add_patch(polygon)
-    # Plot visibility graph edges
     for segment in visibility_graph.segments:
         plt.plot([segment.p1.x, segment.p2.x], [segment.p1.y, segment.p2.y], 'bo-')
 
-    # Mark start and end points
     plt.plot(visibility_graph._s.x, visibility_graph._s.y, 'go', label='Start Point')
     plt.plot(visibility_graph._t.x, visibility_graph._t.y, 'ro', label='End Point')
 
@@ -47,6 +47,66 @@ def plot_visibility_graph(visibility_graph, obstacles):
     plt.ylabel('Y-axis')
     plt.legend()
     plt.show()
+
+
+def create_json(obstacles, simplified_edges, path):
+    json_vg = []
+    for item in simplified_edges:
+        result_vg = {
+            "x": [],
+            "y": [],
+            "mode": "lines",
+            "line": {
+                "color": "blue"
+            }
+        }
+        result_vg["x"].extend([item[0][0], item[1][0]])
+        result_vg["y"].extend([item[0][1], item[1][1]])
+        json_vg.append(result_vg)
+    json_result_vg = json.dumps(json_vg, indent=2)
+
+    json_obstacles = []
+    for i, sublist in enumerate(obstacles):
+        result_obs = {
+            "x": [],
+            "y": [],
+            "mode": 'lines',
+            "fill": 'toself',
+            "fillcolor": 'red',
+            "line": {
+                "color": 'red'
+            }
+        }
+        for item in sublist:
+            result_obs["x"].append(item[0])
+            result_obs["y"].append(item[1])
+        # Add the first point to close the shape
+        result_obs["x"].append(sublist[0][0])
+        result_obs["y"].append(sublist[0][1])
+        json_obstacles.append(result_obs)
+
+    json_result_obs = json.dumps(json_obstacles, indent=2)
+
+    path_simplified = []
+    for p in path:
+        path_simplified.append((p.x, p.y))
+
+    result = {
+        "x": [],
+        "y": [],
+        "mode": 'lines',
+        "line": {
+            "color": 'blue'
+        }
+    }
+
+    for item in path_simplified:
+        result["x"].append(item[0])
+        result["y"].append(item[1])
+
+    json_result_dj = json.dumps(result, indent=2)
+
+    return json_result_dj, json_result_obs, json_result_vg
 
 
 def plot_shortest_path(points, obstacles):
@@ -72,19 +132,28 @@ def plot_shortest_path(points, obstacles):
     plt.show()
 
 
-def simulate():
-    start, end, polygons, obstacles = setup_env()
+def simulate(start, end, polygons, obstacles):
     print(start, end)
-    visibility_graph = gen_visibility_graph(start, end, polygons)
+    print(obstacles)
+    visibility_graph, simplified_edges = gen_visibility_graph(start, end, polygons)
+    print(simplified_edges)
     # plot_visibility_graph(visibility_graph, obstacles)
     path = dijkstra(visibility_graph)
     print(path)
     # plot_shortest_path(path, obstacles)
-    return path
+    return create_json(obstacles, simplified_edges, path)
 
 
 def main():
-    simulate()
+    start, end, polygons, obstacles = setup_env()
+    print(start, end)
+    print(obstacles)
+    visibility_graph, simplified_edges = gen_visibility_graph(start, end, polygons)
+    print(simplified_edges)
+    # plot_visibility_graph(visibility_graph, obstacles)
+    path = dijkstra(visibility_graph)
+    print(path)
+    # plot_shortest_path(path, obstacles)
 
 
 if __name__ == "__main__":

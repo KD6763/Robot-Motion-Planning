@@ -1,28 +1,142 @@
-<!DOCTYPE html> 
-<html> 
-<head> 
-    <title>JavaScript to Python Example</title> 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> 
-</head> 
-<body> 
-    <button onclick="sendData()">SHOW</button> 
-    <div id="output"></div> 
-    <script> 
-        function sendData() { 
-            var value = document.getElementById('input').value; 
-            $.ajax({ 
-                url: '/process', 
-                type: 'POST', 
-                contentType: 'application/json', 
-                data: JSON.stringify({ 'value': value }), 
-                success: function(response) { 
-                    document.getElementById('output').innerHTML = response.result; 
-                }, 
-                error: function(error) { 
-                    console.log(error); 
-                } 
-            }); 
-        } 
-    </script> 
-</body> 
-</html> 
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> 
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+    #cover {
+      position: fixed;
+      width: 100%;
+      height: 1400;
+      background-color: rgba(1, 1, 1, 0.8);
+    }
+  </style>
+</head>
+
+<body>
+
+    <input type="number" id="input">
+    <button onclick="generate()">GENERATE</button>
+    <div id="output">
+
+    </div>
+    <button onclick="simulate()">SIMULATE</button>
+    <div id="output2">
+
+    </div>
+    <div id="parent">
+        <div id="plotly-chart"></div>
+    </div>
+    <div id="cover">
+    </div>
+
+    <script>
+    let objects = null
+    function generate() { 
+        var value = document.getElementById('input').value;
+        const dataToSend = {
+            num_obstacles: value,
+        };
+        $.ajax({
+            type: 'POST',
+            url: '/generate',
+            contentType: 'application/json',
+            data: JSON.stringify(dataToSend),
+            success: function (data) {
+                console.log('data:', data);
+                $('#output').text(JSON.stringify(data));
+                objects = data
+                console.log(objects);
+            },
+            error: function (error) {
+                console.error('Error:', error);
+                $('#output').html(error);
+            }
+        });
+    }
+
+    function simulate() {
+        if (objects != null){
+            $('#output2').text(JSON.stringify(objects));
+            animate_algo(objects)
+        }
+        else
+            $('#output2').text("NULL");
+    }
+    
+    function animate_algo(objects) {
+        // const polygons = [
+        // { x: [0, 0], y: [0, 0], mode: 'lines'},
+        // { x: [200, 300, 300, 200], y: [200, 300, 400, 200], mode: 'lines', fillcolor:"blue", line: { color: 'blue' } },
+        // { x: [400, 500, 600, 400], y: [200, 500, 300, 200], mode: 'lines', fillcolor:"green", line: { color: 'black' } },
+        // { x: [200, 300, 400, 200], y: [400, 600, 500, 400], mode: 'lines', fillcolor:"red", line: { color: 'red' } },
+        // ];
+        polygon_0 = { x: [0, 0], y: [0, 0], mode: 'lines'}
+        polygons = objects[1]
+        polygons.unshift(polygon_0)
+        console.log(polygons)
+
+        // Create a plotly line chart with polygons
+        const plotlyChart = Plotly.newPlot('plotly-chart', polygons, {
+        title: 'Animated Line Chart',
+        xaxis: { title: 'X-axis', range: [0, 1000] },
+        yaxis: { title: 'Y-axis', range: [0, 1000] },
+        width: 800,
+        height: 800,
+        aspectratio: { x: 1, y: 1 },
+        updatemenus: [{
+            type: 'buttons',
+            showactive: false,
+            x: 0.05,
+            y: 0,
+            xanchor: 'right',
+            yanchor: 'top',
+            pad: { t: 87, r: 10 },
+            buttons: [{
+            method: 'animate',
+            args: [null, { fromcurrent: true, transition: { duration: 200, easing: 'quadratic-in-out' }, frame: { duration: 500, redraw: true } }],
+            label: 'Play',
+            }, {
+            method: 'animate',
+            args: [
+                [null],
+                {
+                mode: 'immediate',
+                transition: { duration: 0 },
+                frame: { duration: 0, redraw: true },
+                },
+            ],
+            label: 'Pause',
+            }],
+        }]
+        });
+
+
+    // setTimeout(function() {
+        const animatedData = {
+            x: [100, 200, 500, 950],
+            y: [100, 200, 500, 1000]
+        };
+
+        // Create frames for the animated line
+        const frames = animatedData.x.map((_, i) => ({
+        name: `frame${i + 1}`,
+        data: [{
+            x: animatedData.x.slice(0, i + 1),
+            y: animatedData.y.slice(0, i + 1),
+            mode: 'lines',
+            line: { color: 'green' },
+        }],
+        }));
+        // Update the plot with frames
+        Plotly.addFrames('plotly-chart', frames);
+        console.log('START')
+    // }, 10000)
+    }
+  </script>
+</body>
+
+</html>
