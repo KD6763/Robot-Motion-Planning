@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+
+<body>
+
+  <div id="plotly-chart"></div>
+
+  <script>
+    // Sample data
+    const animatedData = {
+      x: [1, 2, 3, 4],
+      y: [2, 3, 4, 5]
+    };
+
+    const staticData1 = {
+      x: [0, 0],
+      y: [0, 0],
+      mode: 'lines',
+      line: { color: 'green' },
+    };
+
+    const staticData2 = {
+      x: [2, 3],
+      y: [4, 4],
+      mode: 'lines',
+      line: { color: 'red' },
+    };
+
+    const staticData3 = {
+      x: [0, 4],
+      y: [3, 4],
+      mode: 'lines',
+      line: { color: 'blue' },
+    };
+
+    // Create a plotly line chart
+    const plotlyChart = Plotly.newPlot('plotly-chart', [staticData1, staticData2, staticData3], {
+      title: 'Animated Line Chart',
+      xaxis: { title: 'X-axis', range: [0, 10] },
+      yaxis: { title: 'Y-axis', range: [0, 10] },
+      width: 700,
+      height: 700,
+      aspectratio: { x: 1, y: 1 },
+      updatemenus: [{
+        type: 'buttons',
+        showactive: false,
+        x: 0.05,
+        y: 0,
+        xanchor: 'right',
+        yanchor: 'top',
+        pad: { t: 87, r: 10 },
+        buttons: [{
+          method: 'animate',
+          args: [null, { fromcurrent: true, transition: { duration: 200, easing: 'quadratic-in-out' }, frame: { duration: 500, redraw: true } }],
+          label: 'Play',
+        }, {
+          method: 'animate',
+          args: [
+            [null],
+            {
+              mode: 'immediate',
+              transition: { duration: 0 },
+              frame: { duration: 0, redraw: true },
+            },
+          ],
+          label: 'Pause',
+        }],
+      }],
+      sliders: [{
+        pad: { l: 130, t: 55 },
+        currentvalue: {
+          visible: true,
+          prefix: 'Frame:',
+          xanchor: 'right',
+          font: { size: 20, color: '#666' },
+        },
+        steps: animatedData.x.map((_, i) => ({
+          label: i + 1,
+          method: 'animate',
+          args: [[`frame${i + 1}`], {
+            mode: 'immediate',
+            transition: { duration: 0 },
+            frame: { duration: 0, redraw: true },
+          }],
+        })),
+      }],
+    });
+
+    // Create frames for the animated line
+    const frames = animatedData.x.map((_, i) => ({
+      name: `frame${i + 1}`,
+      data: [{
+        x: animatedData.x.slice(0, i + 1),
+        y: animatedData.y.slice(0, i + 1),
+        mode: 'lines',
+        line: { color: 'blue' },
+      }],
+    }));
+
+    // Update the plot with frames
+    Plotly.addFrames('plotly-chart', frames);
+
+  </script>
+</body>
+
+</html>
