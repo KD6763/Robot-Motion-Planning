@@ -27,115 +27,153 @@
     <div id="output2">
 
     </div>
+    <button onclick="shortest()">FIND PATH</button>
+    <div id="output3">
+
+    </div>
     <div id="parent">
-        <div id="plotly-chart"></div>
+        <svg id="svgContainer" viewBox="0 0 1000 1000" width="700" height="700">
+
+        </svg>
     </div>
     <div id="cover">
     </div>
 
     <script>
-    let objects = null
-    function generate() { 
-        var value = document.getElementById('input').value;
-        const dataToSend = {
-            num_obstacles: value,
-        };
-        $.ajax({
-            type: 'POST',
-            url: '/generate',
-            contentType: 'application/json',
-            data: JSON.stringify(dataToSend),
-            success: function (data) {
-                console.log('data:', data);
-                $('#output').text(JSON.stringify(data));
-                objects = data
-                console.log(objects);
-            },
-            error: function (error) {
-                console.error('Error:', error);
-                $('#output').html(error);
+        // $( document ).ready(function() {
+
+            console.log( "ready!" );
+            const svgContainer = document.getElementById('svgContainer');
+            drawAxes();
+            let objects = null
+
+            function clearContainer() {
+                svgContainer.innerHTML = ""
             }
-        });
-    }
 
-    function simulate() {
-        if (objects != null){
-            $('#output2').text(JSON.stringify(objects));
-            animate_algo(objects)
-        }
-        else
-            $('#output2').text("NULL");
-    }
-    
-    function animate_algo(objects) {
-        // const polygons = [
-        // { x: [0, 0], y: [0, 0], mode: 'lines'},
-        // { x: [200, 300, 300, 200], y: [200, 300, 400, 200], mode: 'lines', fillcolor:"blue", line: { color: 'blue' } },
-        // { x: [400, 500, 600, 400], y: [200, 500, 300, 200], mode: 'lines', fillcolor:"green", line: { color: 'black' } },
-        // { x: [200, 300, 400, 200], y: [400, 600, 500, 400], mode: 'lines', fillcolor:"red", line: { color: 'red' } },
-        // ];
-        polygon_0 = { x: [0, 0], y: [0, 0], mode: 'lines'}
-        polygons = objects[1]
-        polygons.unshift(polygon_0)
-        console.log(polygons)
+            function drawAxes() {
+                console.log("PLOTTING");
+                // X-axis
+                const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                xAxis.setAttribute('x1', 0);
+                xAxis.setAttribute('y1', 1000);
+                xAxis.setAttribute('x2', 1000);
+                xAxis.setAttribute('y2', 1000);
+                xAxis.setAttribute('stroke', 'black');
+                svgContainer.appendChild(xAxis);
+                console.log("PLOTTING");
 
-        // Create a plotly line chart with polygons
-        const plotlyChart = Plotly.newPlot('plotly-chart', polygons, {
-        title: 'Animated Line Chart',
-        xaxis: { title: 'X-axis', range: [0, 1000] },
-        yaxis: { title: 'Y-axis', range: [0, 1000] },
-        width: 800,
-        height: 800,
-        aspectratio: { x: 1, y: 1 },
-        updatemenus: [{
-            type: 'buttons',
-            showactive: false,
-            x: 0.05,
-            y: 0,
-            xanchor: 'right',
-            yanchor: 'top',
-            pad: { t: 87, r: 10 },
-            buttons: [{
-            method: 'animate',
-            args: [null, { fromcurrent: true, transition: { duration: 200, easing: 'quadratic-in-out' }, frame: { duration: 500, redraw: true } }],
-            label: 'Play',
-            }, {
-            method: 'animate',
-            args: [
-                [null],
-                {
-                mode: 'immediate',
-                transition: { duration: 0 },
-                frame: { duration: 0, redraw: true },
-                },
-            ],
-            label: 'Pause',
-            }],
-        }]
-        });
+                // Y-axis
+                const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                yAxis.setAttribute('x1', 0);
+                yAxis.setAttribute('y1', 1000);
+                yAxis.setAttribute('x2', 0);
+                yAxis.setAttribute('y2', 0);
+                yAxis.setAttribute('stroke', 'black');
+                svgContainer.appendChild(yAxis);
+            }
 
+            function drawShapeOrLine(shapeOrLine) {
+                if (shapeOrLine.type === 'line') {
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', shapeOrLine.x1);
+                    line.setAttribute('y1', 1000 - shapeOrLine.y1); // Invert y-coordinate
+                    line.setAttribute('x2', shapeOrLine.x2);
+                    line.setAttribute('y2', 1000 - shapeOrLine.y2); // Invert y-coordinate
+                    line.setAttribute('stroke', shapeOrLine.fill);
+                    console.log("LINE")
+                    svgContainer.appendChild(line);
+                } else if (shapeOrLine.type === 'polygon') {
+                    const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                    const points = shapeOrLine.points.map(point => `${point.x},${1000 - point.y}`).join(' '); // Invert y-coordinate
+                    polygon.setAttribute('points', points);
+                    polygon.setAttribute('stroke', 'black');
+                    polygon.setAttribute('fill', shapeOrLine.fill);
+                    console.log("POLYGON")
+                    svgContainer.appendChild(polygon);
+                }
+            }
 
-    // setTimeout(function() {
-        const animatedData = {
-            x: [100, 200, 500, 950],
-            y: [100, 200, 500, 1000]
-        };
+            function generate() { 
+                var value = document.getElementById('input').value;
+                const dataToSend = {
+                    num_obstacles: value,
+                };
+                $.ajax({
+                    type: 'POST',
+                    url: '/generate',
+                    contentType: 'application/json',
+                    data: JSON.stringify(dataToSend),
+                    success: function (data) {
+                        console.log('data:', data);
+                        objects = data;
+                        console.log(objects);
+                        if (objects != null){
+                            $('#output').text(objects[1]);
+                            clearContainer()
+                            polygons = objects[1]
+                            for (index in polygons) {
+                                console.log(polygons[index])
+                                drawShapeOrLine(polygons[index])
+                            }
+                        }
+                        else
+                            $('#output').text("NULL");
+                    },
+                    error: function (error) {
+                        console.error('Error:', error);
+                        $('#output').html(error);
+                    }
+                });
+            }
 
-        // Create frames for the animated line
-        const frames = animatedData.x.map((_, i) => ({
-        name: `frame${i + 1}`,
-        data: [{
-            x: animatedData.x.slice(0, i + 1),
-            y: animatedData.y.slice(0, i + 1),
-            mode: 'lines',
-            line: { color: 'green' },
-        }],
-        }));
-        // Update the plot with frames
-        Plotly.addFrames('plotly-chart', frames);
-        console.log('START')
-    // }, 10000)
-    }
+            function setdelay(graph_lines, index) {
+                console.log(index)
+                setTimeout(drawShapeOrLine(graph_lines[index]), 1000);
+            }
+
+            function animate_simulation(graph_lines) {
+                console.log("0")
+                setTimeout(drawShapeOrLine(graph_lines[0]), 1000);
+                let index = 1;
+                while (index < graph_lines.length) {
+                    setdelay(graph_lines, index)
+                    index++
+                }
+            }
+            let currentIndex = 0
+            function animateGraph() {
+                if (currentIndex < objects[2].length) {
+                    console.log("STARt")
+                    // drawAxes();
+                    drawShapeOrLine(objects[2][currentIndex]);
+                    currentIndex++;
+                    setTimeout(animateGraph, 1000); // Adjust the delay as needed
+                }
+                else {
+                    currentIndex = 0
+                    return 0
+                }
+            }
+
+            function simulate() {
+                if (objects != null){
+                    $('#output2').text(JSON.stringify(objects[2]));
+                    setTimeout(animateGraph, 1000);
+                }
+                else
+                    $('#output2').text("NULL");
+            }
+
+            function shortest() {
+                if (objects != null){
+                    $('#output3').text(JSON.stringify(objects[3]));
+                    animate_simulation(objects[3]);
+                }
+                else
+                    $('#output3').text("NULL");
+            }
+        // });
   </script>
 </body>
 

@@ -8,8 +8,8 @@ import json
 random.seed(77)
 
 
-def setup_env():
-    num_obstacles = 3
+def setup_env(num_obstacles = 3):
+    # num_obstacles = 3
     coord_range = (950, 950)
     convex = True
     obstacles = e.create_obstacles(num_obstacles, coord_range, convex)
@@ -52,59 +52,56 @@ def plot_visibility_graph(visibility_graph, obstacles):
 def create_json(obstacles, simplified_edges, path):
     json_vg = []
     for item in simplified_edges:
-        result_vg = {
-            "x": [],
-            "y": [],
-            "mode": "lines",
-            "line": {
-                "color": "blue"
-            }
+        line = {
+            "type": 'line',
+            "stroke-width": 1
         }
-        result_vg["x"].extend([item[0][0], item[1][0]])
-        result_vg["y"].extend([item[0][1], item[1][1]])
-        json_vg.append(result_vg)
+        line["fill"] = "#{:02X}{:02X}{:02X}".format(255, 0, 0)
+        line["x1"] = item[0][0]
+        line["y1"] = item[0][1]
+        line["x2"] = item[1][0]
+        line["y2"] = item[1][1]
+        json_vg.append(line)
     json_result_vg = json.dumps(json_vg, indent=2)
 
     json_obstacles = []
     for i, sublist in enumerate(obstacles):
-        result_obs = {
-            "x": [],
-            "y": [],
-            "mode": 'lines',
-            "fill": 'toself',
-            "fillcolor": 'red',
-            "line": {
-                "color": 'red'
-            }
+        polygon = {
+            "type": 'polygon',
+            "points": [],
         }
+        random_color = "#{:02X}{:02X}{:02X}".format(random.randint(1, 255),
+                                                    random.randint(1, 255),
+                                                    255)
+        polygon["fill"] = random_color
         for item in sublist:
-            result_obs["x"].append(item[0])
-            result_obs["y"].append(item[1])
+            point = dict()
+            point["x"] = item[0]
+            point["y"] = item[1]
+            polygon["points"].append(point)
         # Add the first point to close the shape
-        result_obs["x"].append(sublist[0][0])
-        result_obs["y"].append(sublist[0][1])
-        json_obstacles.append(result_obs)
+        point = dict()
+        point["x"] = sublist[0][0]
+        point["y"] = sublist[0][1]
+        polygon["points"].append(point)
+        json_obstacles.append(polygon)
 
     json_result_obs = json.dumps(json_obstacles, indent=2)
 
-    path_simplified = []
-    for p in path:
-        path_simplified.append((p.x, p.y))
-
-    result = {
-        "x": [],
-        "y": [],
-        "mode": 'lines',
-        "line": {
-            "color": 'blue'
+    json_path = []
+    for index in range(len(path) - 1):
+        line = {
+            "type": 'line',
+            "stroke-width": 3
         }
-    }
+        line["fill"] = "#{:02X}{:02X}{:02X}".format(0, 255, 0)
+        line["x1"] = path[index].x
+        line["y1"] = path[index].y
+        line["x2"] = path[index + 1].x
+        line["y2"] = path[index + 1].y
+        json_path.append(line)
 
-    for item in path_simplified:
-        result["x"].append(item[0])
-        result["y"].append(item[1])
-
-    json_result_dj = json.dumps(result, indent=2)
+    json_result_dj = json.dumps(json_path, indent=2)
 
     return json_result_dj, json_result_obs, json_result_vg
 
@@ -133,13 +130,13 @@ def plot_shortest_path(points, obstacles):
 
 
 def simulate(start, end, polygons, obstacles):
-    print(start, end)
-    print(obstacles)
+    # print(start, end)
+    # print(obstacles)
     visibility_graph, simplified_edges = gen_visibility_graph(start, end, polygons)
-    print(simplified_edges)
+    # print(simplified_edges)
     # plot_visibility_graph(visibility_graph, obstacles)
     path = dijkstra(visibility_graph)
-    print(path)
+    # print(path)
     # plot_shortest_path(path, obstacles)
     return create_json(obstacles, simplified_edges, path)
 

@@ -51,8 +51,9 @@ def sim():
 def genreate():
     # Generate the figure **without using pyplot**.
     data = request.json
-    print(data)
-    start, end, polygons, obstacles = s.setup_env()
+    num_obstacles = data["num_obstacles"]
+    print(num_obstacles)
+    start, end, polygons, obstacles = s.setup_env(abs(int(num_obstacles)))
     path, obstacles, simplified_edges = s.simulate(start, end, polygons, obstacles)
     result = [data, json.loads(obstacles), json.loads(simplified_edges), json.loads(path)]
     print(result)
@@ -62,5 +63,9 @@ def genreate():
 @app.route("/test/")
 def test():
     # Generate the figure **without using pyplot**.
-    path = s.simulate()
     return render_template("test.html")
+
+@app.route("/test2/")
+def test2():
+    # Generate the figure **without using pyplot**.
+    return render_template("test2.html")
