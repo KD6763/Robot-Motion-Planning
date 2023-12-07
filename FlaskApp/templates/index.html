@@ -2,90 +2,154 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> 
-  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-  <style>
-    #cover {
-      position: fixed;
-      width: 100%;
-      height: 1400;
-      background-color: rgba(1, 1, 1, 0.8);
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <title>Robot Motion Planning | CSCI-716 Project</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="../static/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+
+    <!-- Additional CSS Files -->
+    <link rel="stylesheet" href="static/assets/css/fontawesome.css">
+    <link rel="stylesheet" href="static/assets/css/templatemo-scholar.css">
+    <!-- <link rel="stylesheet" href="assets/css/owl.css"> -->
+    <link rel="stylesheet" href="static/assets/css/animate.css">
+    <link rel="stylesheet" href="https://unpkg.com/swiper@7/swiper-bundle.min.css"/>
+  
+    <style>
+    .contain-box {
+        margin: auto;
+        padding: 50px;
+        width: max-content;
+        height: max-content;
     }
-  </style>
+    #controls {
+        padding-bottom: 0px;
+    }
+    .control-input {
+        font-size: 14px;
+        color: #7a6ad8;
+        background-color: #fff;
+        display: inline-block;
+        height: 50px;
+        width: 100px;
+        line-height: 50px;
+        padding: 0px 25px;
+        border-radius: 5px;
+        font-weight: 500;
+    }
+    .control-buttons {
+        font-size: 14px;
+        color: #fff;
+        background-color: #7a6ad8;
+        display: inline-block;
+        height: 50px;
+        line-height: 50px;
+        padding: 0px 25px;
+        border-radius: 25px;
+        font-weight: 500;
+        cursor: pointer;
+        margin: 0px 10px;
+    }
+    .control-buttons:disabled {
+        font-size: 14px;
+        color: #fff;
+        background-color: #959595;
+        display: inline-block;
+        height: 50px;
+        line-height: 50px;
+        padding: 0px 25px;
+        border-radius: 25px;
+        font-weight: 500;
+    }
+    svg {
+        border: 1px solid #000;
+    }
+    </style>
 </head>
 
 <body>
+    <div class="container-fluid">
+    <div class="row">
+        <div class="parent col-md-4" style="padding-top: 25vh;">
+            <div id="controls" class="contain-box">
+                <div class="row" style="padding: 10px;">
+                    <div class="col-md-6">Obstacles:</div>
+                    <div class="col-md-6"><input type="number" id="input" class="control-input" value="3" step="1" min="1" max="50"></div>
+                </div>
+                <div class="row" style="padding: 10px;">
+                    <div class="col-md-6">Speed (seconds):</div>
+                    <div class="col-md-6"><input type="number" id="speed" class="control-input" value="10" step="1" min="5" max="50"></div>
+                </div>
+                <!-- <div class="row">
+                    <div class="col-md-6">Obstacles:</div> <div class="col-md-6"><input  type="number" id="radius" class="control-input" value="50" step="1" min="1" max="50"></div>
+                </div> -->
+            </div>
+            <div id="controls" class="contain-box">
+                <button class="control-buttons" id="generate" onclick="generate()">GENERATE</button>
+                
+                <button class="control-buttons" id="simulate" onclick="simulate()" disabled>SIMULATE</button>
+                
+                <button class="control-buttons" id="shortest" onclick="shortest()" disabled>FIND PATH</button>
+            </div>
+        </div>
 
-    <input type="number" id="input">
-    <button onclick="generate()">GENERATE</button>
-    <div id="output">
-
+        <div class="parent col-md-8">
+            <div id = "box" class="contain-box">
+                <svg id="svgContainer" viewBox="0 0 1000 1000" width="700" height="700">
+                </svg>
+            </div>
+        </div>
     </div>
-    <button onclick="simulate()">SIMULATE</button>
-    <div id="output2">
-
-    </div>
-    <button onclick="shortest()">FIND PATH</button>
-    <div id="output3">
-
-    </div>
-    <div id="parent">
-        <svg id="svgContainer" viewBox="0 0 1000 1000" width="700" height="700">
-
-        </svg>
-    </div>
-    <div id="cover">
     </div>
 
+    <!-- Scripts -->
+    <!-- Bootstrap core JavaScript -->
+    <script src="static/vendor/jquery/jquery.min.js"></script>
+    <script src="static/vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="static/assets/js/isotope.min.js"></script>
+    <!-- <script src="assets/js/owl-carousel.js"></script> -->
+    <script src="static/assets/js/counter.js"></script>
+    <script src="static/assets/js/custom.js"></script>
     <script>
         // $( document ).ready(function() {
 
             console.log( "ready!" );
+            let boxSize = 1000;
             const svgContainer = document.getElementById('svgContainer');
-            drawAxes();
-            let objects = null
+            // drawAxes();
+            let objects = null;
+            let robot = null;
+            let speed = 10000
+            let time = 100
 
             function clearContainer() {
                 svgContainer.innerHTML = ""
-            }
-
-            function drawAxes() {
-                console.log("PLOTTING");
-                // X-axis
-                const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                xAxis.setAttribute('x1', 0);
-                xAxis.setAttribute('y1', 1000);
-                xAxis.setAttribute('x2', 1000);
-                xAxis.setAttribute('y2', 1000);
-                xAxis.setAttribute('stroke', 'black');
-                svgContainer.appendChild(xAxis);
-                console.log("PLOTTING");
-
-                // Y-axis
-                const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                yAxis.setAttribute('x1', 0);
-                yAxis.setAttribute('y1', 1000);
-                yAxis.setAttribute('x2', 0);
-                yAxis.setAttribute('y2', 0);
-                yAxis.setAttribute('stroke', 'black');
-                svgContainer.appendChild(yAxis);
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('r', 10);
+                circle.setAttribute('fill', '#000');
+                circle.setAttribute('cx', '0');
+                circle.setAttribute('cy', '1000');
+                robot = circle
+                svgContainer.appendChild(robot);
             }
 
             function drawShapeOrLine(shapeOrLine) {
                 if (shapeOrLine.type === 'line') {
                     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
                     line.setAttribute('x1', shapeOrLine.x1);
-                    line.setAttribute('y1', 1000 - shapeOrLine.y1); // Invert y-coordinate
+                    line.setAttribute('y1', boxSize - shapeOrLine.y1); // Invert y-coordinate
                     line.setAttribute('x2', shapeOrLine.x2);
-                    line.setAttribute('y2', 1000 - shapeOrLine.y2); // Invert y-coordinate
+                    line.setAttribute('y2', boxSize - shapeOrLine.y2); // Invert y-coordinate
                     line.setAttribute('stroke', shapeOrLine.fill);
                     console.log("LINE")
                     svgContainer.appendChild(line);
                 } else if (shapeOrLine.type === 'polygon') {
                     const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-                    const points = shapeOrLine.points.map(point => `${point.x},${1000 - point.y}`).join(' '); // Invert y-coordinate
+                    const points = shapeOrLine.points.map(point => `${point.x},${boxSize - point.y}`).join(' '); // Invert y-coordinate
                     polygon.setAttribute('points', points);
                     polygon.setAttribute('stroke', 'black');
                     polygon.setAttribute('fill', shapeOrLine.fill);
@@ -96,6 +160,7 @@
 
             function generate() { 
                 var value = document.getElementById('input').value;
+                var speed = document.getElementById('input').value;
                 const dataToSend = {
                     num_obstacles: value,
                 };
@@ -109,69 +174,109 @@
                         objects = data;
                         console.log(objects);
                         if (objects != null){
-                            $('#output').text(objects[1]);
+                            // $('#output').text(objects[1]);
                             clearContainer()
                             polygons = objects[1]
                             for (index in polygons) {
                                 console.log(polygons[index])
                                 drawShapeOrLine(polygons[index])
+                                $('#simulate').prop('disabled', false);
+                                $('#shortest').prop('disabled', false);
                             }
                         }
-                        else
-                            $('#output').text("NULL");
+                        else {
+                            // $('#output').text("NULL");
+                            console.error('Error:', error);
+                        }
                     },
                     error: function (error) {
                         console.error('Error:', error);
-                        $('#output').html(error);
+                        // $('#output').html(error);
                     }
                 });
             }
 
-            function setdelay(graph_lines, index) {
-                console.log(index)
-                setTimeout(drawShapeOrLine(graph_lines[index]), 1000);
-            }
-
-            function animate_simulation(graph_lines) {
-                console.log("0")
-                setTimeout(drawShapeOrLine(graph_lines[0]), 1000);
-                let index = 1;
-                while (index < graph_lines.length) {
-                    setdelay(graph_lines, index)
-                    index++
-                }
-            }
             let currentIndex = 0
             function animateGraph() {
                 if (currentIndex < objects[2].length) {
-                    console.log("STARt")
-                    // drawAxes();
                     drawShapeOrLine(objects[2][currentIndex]);
                     currentIndex++;
-                    setTimeout(animateGraph, 1000); // Adjust the delay as needed
+                    setTimeout(animateGraph, time); // Adjust the delay as needed
                 }
                 else {
                     currentIndex = 0
-                    return 0
                 }
             }
 
             function simulate() {
                 if (objects != null){
-                    $('#output2').text(JSON.stringify(objects[2]));
-                    setTimeout(animateGraph, 1000);
+                    // $('#output2').text(JSON.stringify(objects[2]));
+                    time = Math.floor(speed / objects[2].length)
+                    setTimeout(animateGraph, time);
                 }
-                else
-                    $('#output2').text("NULL");
+                else {
+                    // $('#output2').text("NULL");
+                    console.log("simulate error");
+                }
+            }
+
+            function animatePath() {
+                lines = objects[3]
+                if (lines != null) {
+                    for (index in objects[3]) {
+                        drawShapeOrLine(lines[index]);
+                    }
+                }
+                else {
+                    console.log("shortest error");
+                }
             }
 
             function shortest() {
                 if (objects != null){
-                    $('#output3').text(JSON.stringify(objects[3]));
-                    animate_simulation(objects[3]);
+                    // $('#output3').text(JSON.stringify(objects[3]));
+                    // setTimeout(animatePath, 1000);
+                    animatePath()
+                    pathData = convertLinesToPath(objects[3])
+                    console.log(pathData)
+                    // const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    // // path.setAttribute('d', 'M0,1000 L400,500 M400,500 L1000,0 z');
+                    // path.setAttribute('d', 'M20,50 C20,-50 180,150 180,50 C180-50 20,150 20,50 z');
+                    // path.setAttribute('stroke', 'green');
+                    // path.setAttribute('stroke-width', '4');
+                    // // path.setAttribute('fill', 'green');
+                    // svgContainer.appendChild(path);
+                    moveRobot(pathData)
                 }
-                else
-                    $('#output3').text("NULL");
+                else {
+                    // $('#output3').text("NULL");
+                    console.log("shortest error")
+                }
+            }
+
+            function convertLinesToPath(lines) {
+                let pathData = `M${lines[0].x1},${boxSize - lines[0].y1}`;
+                for (let i = 0; i < lines.length; i++) {
+                    pathData += ` L${lines[i].x2},${boxSize - lines[i].y2}`;
+                }
+                console.log(pathData)
+                return pathData;
+            }
+
+            function moveRobot(pathData) {
+                const animateMotion = document.createElementNS('http://www.w3.org/2000/svg', 'animateMotion');
+                animateMotion.setAttribute('dur', '7s');
+                animateMotion.setAttribute('repeatCount', '1');
+                animateMotion.setAttribute('fill', 'freeze');
+                animateMotion.setAttribute('path', pathData);
+                robot.appendChild(animateMotion);
+                
+                // // Set initial position
+                robot.setAttribute('cx', '0');
+                robot.setAttribute('cy', '0');
+                
+                // Start the animation
+                animateMotion.beginElement();
             }
         // });
   </script>

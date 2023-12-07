@@ -1,38 +1,57 @@
-from typing import List
-from heapq import heappop, heappush
+import heapq
 
-from code.ClassList import VisibilityGraph, Point
 
-def dijkstra(graph: VisibilityGraph) -> List[Point]:
-    if not graph.constructed:
-        graph.construct_adj_list()
+def build_graph(edges):
+    graph = {}
+    for edge in edges:
+        start, end = edge
+        if start not in graph:
+            graph[start] = []
+        if end not in graph:
+            graph[end] = []
+        # Assuming equal weight for all edges, you can modify this if weights are different
+        weight = ((end[0] - start[0]) ** 2 + (end[1] - start[1]) ** 2) ** 0.5
+        graph[start].append((end, weight))
+        graph[end].append((start, weight))
+    return graph
 
-    vertices, edges = graph.vertices, graph.adjacent_list
-    distances, prev = {v: float('inf') for v in vertices}, {v: None for v in vertices}
-    distances[graph.start] = 0.
 
-    priority_queue = [(0, graph.start)]  # Priority queue to select the vertex with the smallest distance
+def dijkstra(start, end, edges):
+    graph = build_graph(edges)
+
+    # Initialize distances with infinity for all nodes except the start node
+    distances = {node: float('infinity') for node in graph}
+    distances[start] = 0
+
+    # Predecessors dictionary to keep track of the path
+    predecessors = {node: None for node in graph}
+
+    # Priority queue to store nodes with their current distances
+    priority_queue = [(0, start)]
 
     while priority_queue:
-        u_dist, start_vertex = heappop(priority_queue)  # Select vertex with smallest distance
-        if start_vertex in distances:
-            for node in edges[start_vertex]:
-                end_vertex, weight = node.coord, node.w  # Extract adjacent vertex end_vertex and distance weight
-                total_weight = distances[start_vertex] + weight
-                if end_vertex not in priority_queue and total_weight < distances[end_vertex]:
-                    distances[end_vertex] = total_weight
-                    prev[end_vertex] = start_vertex
-                    heappush(priority_queue, (total_weight, end_vertex))
+        current_distance, current_node = heapq.heappop(priority_queue)
 
-            #del distances[start_vertex]  # Mark the vertex as checked
+        # Check if the current path to the current node is shorter than the recorded distance
+        if current_distance > distances[current_node]:
+            continue
 
-    # Construct path to graph.end using back-tracing
-    path = [graph.end]
-    cv = graph.end
-    while cv != graph.start:
-        cv = prev[cv]
-        path.append(cv)
+        # Explore neighbors and update distances and predecessors
+        for neighbor, weight in graph[current_node]:
+            distance = current_distance + weight
 
-    path.reverse()  # Reverse the list for the actual path
+            # If a shorter path is found, update the distance and predecessor
+            if distance < distances[neighbor]:
+                distances[neighbor] = distance
+                predecessors[neighbor] = current_node
+                heapq.heappush(priority_queue, (distance, neighbor))
 
-    return path
+    # Reconstruct the path from end to start
+    path = []
+    current_node = end
+    while current_node is not None:
+        path.insert(0, current_node)
+        current_node = predecessors[current_node]
+
+    # Return the path and the shortest distance
+    return path, distances[end]

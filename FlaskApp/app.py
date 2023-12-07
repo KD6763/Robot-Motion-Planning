@@ -53,10 +53,12 @@ def genreate():
     data = request.json
     num_obstacles = data["num_obstacles"]
     print(num_obstacles)
-    start, end, polygons, obstacles = s.setup_env(abs(int(num_obstacles)))
-    path, obstacles, simplified_edges = s.simulate(start, end, polygons, obstacles)
+    radius = 5
+    # print(num_obstacles)
+    start, end, polygons, obstacles, thick_polygons = s.setup_env(abs(int(num_obstacles)), int(radius))
+    path, obstacles, simplified_edges = s.simulate(start, end, polygons, obstacles, thick_polygons)
     result = [data, json.loads(obstacles), json.loads(simplified_edges), json.loads(path)]
-    print(result)
+    # print(result)
     return result
 
 
