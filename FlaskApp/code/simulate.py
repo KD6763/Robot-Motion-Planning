@@ -58,9 +58,9 @@ def gen_visibility_graph(start, end, polygons):
     simplified_edges = list()
     for point in graph.visgraph.get_points():
         for edge in graph.visgraph[point]:
-            simplified_edges.append(((edge.p1.x, edge.p1.y), (edge.p2.x, edge.p2.y)))
-    return graph, list(set(simplified_edges))
-
+            if ((edge.p1.x, edge.p1.y), (edge.p2.x, edge.p2.y)) not in simplified_edges:
+                simplified_edges.append(((edge.p1.x, edge.p1.y), (edge.p2.x, edge.p2.y)))
+    return graph, simplified_edges
 
 def plot_visibility_graph(visibility_graph, obstacles):
     fig, ax = plt.subplots()
