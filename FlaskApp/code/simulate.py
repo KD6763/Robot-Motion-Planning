@@ -229,7 +229,8 @@ def main():
     end_point = (end.x, end.y)
     path, shortest_distance = dijkstra(start_point, end_point, simplified_edges)
     plot_shortest_path(path, obstacles)
-    print(path)
+    print("Shortest Path: " + str(path))
+    print("The Distance: " + str(shortest_distance))
 
 
 if __name__ == "__main__":
