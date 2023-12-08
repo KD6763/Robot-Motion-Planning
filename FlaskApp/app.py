@@ -52,10 +52,13 @@ def genreate():
     # Generate the figure **without using pyplot**.
     data = request.json
     num_obstacles = data["num_obstacles"]
-    print(num_obstacles)
-    radius = 5
+    convex = data['convex']
+    radius = data['radius']
+    # radius = 5
     # print(num_obstacles)
-    start, end, polygons, obstacles, thick_polygons = s.setup_env(abs(int(num_obstacles)), int(radius), True)
+    start, end, polygons, obstacles, thick_polygons = s.setup_env(int(num_obstacles), int(radius), convex)
+    # print(obstacles)
+    # print(thick_polygons)
     path, obstacles, simplified_edges = s.simulate(start, end, polygons, obstacles, thick_polygons)
     result = [data, json.loads(obstacles), json.loads(simplified_edges), json.loads(path)]
     # print(result)

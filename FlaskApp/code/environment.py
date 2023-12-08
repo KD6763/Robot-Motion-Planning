@@ -104,7 +104,7 @@ def graham_scan(num_points: int, points: list):
 
 
 def create_obstacles(num_obstacles: int, coord_range: tuple, convex: bool = True):
-    partitions = partition(num_obstacles)
+    partitions = list(partition(num_obstacles))
     # x_splits = [100] + sorted(random.sample(range(50, coord_range[0] - 1),
     #                                       partitions[0] - 1)) + [coord_range[0]]
     # partition_areas = []
@@ -120,7 +120,8 @@ def create_obstacles(num_obstacles: int, coord_range: tuple, convex: bool = True
     # d = rightCordinate - leftCordinate
     xList = [leftCordinate]
     yList = [leftCordinate]
- 
+
+    random.shuffle(partitions)
     n = partitions[0]
     for i in range(n-1):
         xList.append( ( (i+1)*rightCordinate + (n-i-1)*leftCordinate )//n )
@@ -141,8 +142,13 @@ def create_obstacles(num_obstacles: int, coord_range: tuple, convex: bool = True
     random.shuffle(partition_areas)
     for area in partition_areas[:num_obstacles]:
         num_points = random.randint(5, 10)
-        points = [(random.randint(area[0][0], area[0][1]), random.randint(
-            area[1][0], area[1][1])) for i in range(num_points)]
+        points = []
+        i = 0
+        while i < num_points:
+            point = (random.randint(area[0][0], area[0][1]), random.randint(area[1][0], area[1][1]))
+            if point not in points:
+                points.append(point)
+                i += 1
         obstacle = sort_counter_clockwise(points)
         if convex:
             obstacle = graham_scan(num_points, points)
