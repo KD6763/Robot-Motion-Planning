@@ -1,5 +1,5 @@
 from __future__ import division
-from math import pi, sqrt, atan2, acos
+from math import pi, sqrt, atan2, acos, atan
 from code.class_list import Point
 
 T = 10**9
@@ -21,6 +21,7 @@ def visible_vertices(point, graph, destination):
 
     # Sort points based on angle and distance from the reference point
     points.sort(key=lambda p: (angle(point, p), euclidean_distance(point, p)))
+    # points.sort(key=lambda p: (angle(point, p)))
 
     # Initialize open_edges with any intersecting edges on the half line
     # from point along the positive x-axis
@@ -175,6 +176,21 @@ def angle(center, point):
         return pi / 2
     else:
         return atan2(dy, dx) % (2 * pi)
+    # dx = point.x - center.x
+    # dy = point.y - center.y
+    # if dx == 0:
+    #     if dy < 0:
+    #         return pi * 3 / 2
+    #     return pi / 2
+    # if dy == 0:
+    #     if dx < 0:
+    #         return pi
+    #     return 0
+    # if dx < 0:
+    #     return pi + atan(dy / dx)
+    # if dy < 0:
+    #     return 2 * pi + atan(dy / dx)
+    # return atan(dy / dx)
 
 
 def angle2(point_a, point_b, point_c):

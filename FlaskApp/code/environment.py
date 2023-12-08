@@ -140,7 +140,7 @@ def create_obstacles(num_obstacles: int, coord_range: tuple, convex: bool = True
     obstacles = []
     random.shuffle(partition_areas)
     for area in partition_areas[:num_obstacles]:
-        num_points = random.randint(5, 15)
+        num_points = random.randint(5, 10)
         points = [(random.randint(area[0][0], area[0][1]), random.randint(
             area[1][0], area[1][1])) for i in range(num_points)]
         obstacle = sort_counter_clockwise(points)

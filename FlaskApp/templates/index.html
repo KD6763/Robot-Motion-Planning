@@ -29,6 +29,9 @@
     #controls {
         padding-bottom: 0px;
     }
+    #controls .row {
+        padding: 10px;
+    }
     .control-input {
         font-size: 14px;
         color: #7a6ad8;
@@ -40,6 +43,10 @@
         padding: 0px 25px;
         border-radius: 5px;
         font-weight: 500;
+    }
+    #convex {
+        height: 25px;
+        width: 100px;
     }
     .control-buttons {
         font-size: 14px;
@@ -66,7 +73,7 @@
         font-weight: 500;
     }
     svg {
-        border: 1px solid #000;
+        border: 5px solid #000;
     }
     </style>
 </head>
@@ -74,19 +81,23 @@
 <body>
     <div class="container-fluid">
     <div class="row">
-        <div class="parent col-md-4" style="padding-top: 25vh;">
+        <div class="parent col-md-4">
+            <div style="padding-top: 15vh; padding-bottom: 4vh;">
+                <h2 style="text-align: center;">Robot Motion Planning</h2>
+            </div>
             <div id="controls" class="contain-box">
-                <div class="row" style="padding: 10px;">
+                <div class="row">
                     <div class="col-md-6">Obstacles:</div>
                     <div class="col-md-6"><input type="number" id="input" class="control-input" value="3" step="1" min="1" max="50"></div>
                 </div>
-                <div class="row" style="padding: 10px;">
+                <div class="row">
+                    <div class="col-md-6">Convex:</div>
+                    <div class="col-md-6"><input  type="checkbox" id="convex" class="control-input" checked></div>
+                </div>
+                <div class="row">
                     <div class="col-md-6">Speed (seconds):</div>
                     <div class="col-md-6"><input type="number" id="speed" class="control-input" value="10" step="1" min="5" max="50"></div>
                 </div>
-                <!-- <div class="row">
-                    <div class="col-md-6">Obstacles:</div> <div class="col-md-6"><input  type="number" id="radius" class="control-input" value="50" step="1" min="1" max="50"></div>
-                </div> -->
             </div>
             <div id="controls" class="contain-box">
                 <button class="control-buttons" id="generate" onclick="generate()">GENERATE</button>
@@ -94,6 +105,11 @@
                 <button class="control-buttons" id="simulate" onclick="simulate()" disabled>SIMULATE</button>
                 
                 <button class="control-buttons" id="shortest" onclick="shortest()" disabled>FIND PATH</button>
+            </div>
+            <div id="controls" class="contain-box">
+                <button class="control-buttons" id="clearLines" onclick="clearLines()">CLEAR LINES</button>
+                
+                <button class="control-buttons" id="clearContainer" onclick="clearContainer()">CLEAR ALL</button>
             </div>
         </div>
 
@@ -127,6 +143,7 @@
             let time = 100
 
             function clearContainer() {
+                console.log("CLEAR ALL")
                 svgContainer.innerHTML = ""
                 const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                 circle.setAttribute('r', 10);
@@ -137,6 +154,26 @@
                 svgContainer.appendChild(robot);
             }
 
+            function clearLines() {
+                console.log("CLEAR LINES")
+                const linesToRemove = svgContainer.querySelectorAll('line');
+                console.log(linesToRemove);
+                linesToRemove.forEach(line => line.parentNode.removeChild(line));
+            }
+
+            function enableAll() {
+                console.log("Enable Buttons");
+                var buttons = $('.control-buttons');
+                buttons.prop('disabled', false);
+            }
+
+            function disableOthers(id) {
+                console.log("Disable Buttons");
+                // var buttons = $('.control-buttons:not(#' + id + ')');
+                var buttons = $('.control-buttons');
+                buttons.prop('disabled', true);
+            }
+
             function drawShapeOrLine(shapeOrLine) {
                 if (shapeOrLine.type === 'line') {
                     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
@@ -145,7 +182,8 @@
                     line.setAttribute('x2', shapeOrLine.x2);
                     line.setAttribute('y2', boxSize - shapeOrLine.y2); // Invert y-coordinate
                     line.setAttribute('stroke', shapeOrLine.fill);
-                    console.log("LINE")
+                    line.setAttribute('stroke-width', shapeOrLine.strokewidth);
+                    console.log("LINE");
                     svgContainer.appendChild(line);
                 } else if (shapeOrLine.type === 'polygon') {
                     const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
@@ -153,14 +191,16 @@
                     polygon.setAttribute('points', points);
                     polygon.setAttribute('stroke', 'black');
                     polygon.setAttribute('fill', shapeOrLine.fill);
-                    console.log("POLYGON")
+                    console.log("POLYGON");
                     svgContainer.appendChild(polygon);
                 }
             }
 
             function generate() { 
+                disableOthers('generate');
                 var value = document.getElementById('input').value;
-                var speed = document.getElementById('input').value;
+                var speedValue = document.getElementById('speed').value;
+                speed = speedValue * 1000
                 const dataToSend = {
                     num_obstacles: value,
                 };
@@ -175,13 +215,12 @@
                         console.log(objects);
                         if (objects != null){
                             // $('#output').text(objects[1]);
-                            clearContainer()
+                            clearContainer();
                             polygons = objects[1]
                             for (index in polygons) {
-                                console.log(polygons[index])
-                                drawShapeOrLine(polygons[index])
-                                $('#simulate').prop('disabled', false);
-                                $('#shortest').prop('disabled', false);
+                                console.log(polygons[index]);
+                                drawShapeOrLine(polygons[index]);
+                                enableAll();
                             }
                         }
                         else {
@@ -209,14 +248,19 @@
             }
 
             function simulate() {
+                disableOthers('simulate');
+                // alert("DOES IT WORK?");
                 if (objects != null){
                     // $('#output2').text(JSON.stringify(objects[2]));
                     time = Math.floor(speed / objects[2].length)
                     setTimeout(animateGraph, time);
+                    console.log(speed);
+                    setTimeout(enableAll, speed);
                 }
                 else {
                     // $('#output2').text("NULL");
                     console.log("simulate error");
+                    enableAll();
                 }
             }
 
@@ -233,6 +277,7 @@
             }
 
             function shortest() {
+                disableOthers('shortest');
                 if (objects != null){
                     // $('#output3').text(JSON.stringify(objects[3]));
                     // setTimeout(animatePath, 1000);
@@ -252,6 +297,7 @@
                     // $('#output3').text("NULL");
                     console.log("shortest error")
                 }
+                enableAll();
             }
 
             function convertLinesToPath(lines) {

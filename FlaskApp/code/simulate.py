@@ -5,44 +5,85 @@ import matplotlib.patches as patches
 import random
 from code.shortestpath import dijkstra
 import json
+import math
 import numpy as np
 # random.seed(334)
 
 
-def enhancePolygon(obstacles, radius = 50*2):
-    # radius = 50
- 
-    # Calculate new vertices
-    polygons = []
-    for vertex in obstacles:
-        # Vector from centroid to vertex
-        # print(np.array(vertex))
-        centroids = np.mean(np.array(vertex), axis=0)
-        # print(centroids)
-        vectors = np.array(vertex) - centroids
- 
-        # Calculate distance from centroid to vertex
-        distances = np.linalg.norm(vectors)
- 
-        # Calculate new distance after adding thickness
-        new_distance = distances + radius*2
- 
-        # Scaling factor
-        scaling_factor = new_distance / distances if distances != 0 else 1
- 
-        # Calculate scaled vertex
-        scaled_vertex = centroids + vectors * scaling_factor
- 
-        # Append scaled vertex to the list
-        polygons.append(list(scaled_vertex))
-    print(polygons)
-    return polygons
+def enhancePolygon(vertices, radius):
+    """
+    Scales a convex polygon by a given thickness for each side.
+
+    :param vertices: List of tuples representing the vertices of the polygon [(x1, y1), (x2, y2), ..., (xn, yn)]
+    :param thicknesses: List of thicknesses for each side.
+    :return: List of tuples representing the scaled vertices of the polygon.
+    """
+    radius = (radius) * -1
+    def unit_vector(vector):
+        """ Returns the unit vector of the vector. """
+        return vector / np.linalg.norm(vector)
+
+    def scale_vertex(p1, p2, p3, thickness):
+        """
+        Scales a single vertex defined by points p1, p2, and p3 with the given thickness.
+        """
+        # Vector from p1 to p2 and p2 to p3
+        v1 = np.array(p2) - np.array(p1)
+        v2 = np.array(p3) - np.array(p2)
+
+        # Unit vectors
+        u_v1 = unit_vector(v1)
+        u_v2 = unit_vector(v2)
+
+        # Normal vectors pointing "outwards" from the edges
+        n1 = np.array([-u_v1[1], u_v1[0]])
+        n2 = np.array([-u_v2[1], u_v2[0]])
+
+        # Offset points along the normal vectors by the thickness
+        p1_offset = np.array(p1) + n1 * thickness
+        p2_offset = np.array(p2) + n1 * thickness
+        p3_offset = np.array(p2) + n2 * thickness
+        p4_offset = np.array(p3) + n2 * thickness
+
+        # Calculate intersection of the two offset lines (p1_offset -> p2_offset) and (p3_offset -> p4_offset)
+        A1 = p2_offset[1] - p1_offset[1]
+        B1 = p1_offset[0] - p2_offset[0]
+        C1 = A1 * p1_offset[0] + B1 * p1_offset[1]
+
+        A2 = p4_offset[1] - p3_offset[1]
+        B2 = p3_offset[0] - p4_offset[0]
+        C2 = A2 * p3_offset[0] + B2 * p3_offset[1]
+
+        det = A1 * B2 - A2 * B1
+        if det == 0:
+            raise ValueError("Lines do not intersect")
+        else:
+            x = (B2 * C1 - B1 * C2) / det
+            y = (A1 * C2 - A2 * C1) / det
+            return (math.ceil(x), math.ceil(y))
+
+    scaled_vertices = []
+
+    # Loop through all vertices to calculate the new scaled vertices
+    for obstacle in vertices:
+        temp = []
+        num_vertices = len(obstacle)
+        for i in range(len(obstacle)):
+            p1 = obstacle[i - 1]  # Previous vertex
+            p2 = obstacle[i]      # Current vertex
+            p3 = obstacle[(i + 1) % num_vertices]  # Next vertex
+
+            # Scale current vertex and add to list
+            scaled_vertex = scale_vertex(p1, p2, p3, radius)
+            temp.append(scaled_vertex)
+            scaled_vertices.append(temp)
+    return scaled_vertices
 
 
-def setup_env(num_obstacles = 3, radius = 50):
+def setup_env(num_obstacles = 3, radius = 50, convex = True):
     # num_obstacles = 8
     coord_range = (950, 950)
-    convex = True
+    # convex = False
     obstacles = e.create_obstacles(num_obstacles, coord_range, convex)
     # print(obstacles)
     #obstacles = [[(200, 400), (400, 400), (400, 500), (200, 500)], [(450, 350), (550, 350), (550, 450), (450, 450)], [(600, 100), (700, 100), (700, 400), (600, 400)]]
@@ -58,8 +99,10 @@ def gen_visibility_graph(start, end, polygons):
     simplified_edges = list()
     for point in graph.visgraph.get_points():
         for edge in graph.visgraph[point]:
-            simplified_edges.append(((edge.p1.x, edge.p1.y), (edge.p2.x, edge.p2.y)))
-    return graph, list(set(simplified_edges))
+            simply_edge = ((edge.p1.x, edge.p1.y), (edge.p2.x, edge.p2.y))
+            if simply_edge not in simplified_edges:
+                simplified_edges.append(((edge.p1.x, edge.p1.y), (edge.p2.x, edge.p2.y)))
+    return graph, simplified_edges
 
 
 def plot_visibility_graph(visibility_graph, obstacles):
@@ -90,7 +133,7 @@ def create_json(obstacles, simplified_edges, path):
     for item in simplified_edges:
         line = {
             "type": 'line',
-            "stroke-width": 1
+            "strokewidth": '1'
         }
         line["fill"] = "#{:02X}{:02X}{:02X}".format(255, 0, 0)
         line["x1"] = item[0][0]
@@ -128,7 +171,7 @@ def create_json(obstacles, simplified_edges, path):
     for index in range(len(path) - 1):
         line = {
             "type": 'line',
-            "stroke-width": 3
+            "strokewidth": '5'
         }
         line["fill"] = "#{:02X}{:02X}{:02X}".format(0, 255, 0)
         line["x1"] = path[index][0]
@@ -167,7 +210,7 @@ def plot_shortest_path(points, obstacles):
 def simulate(start, end, polygons, obstacles, thick_polygons):
     # print(start, end)
     # print(obstacles)
-    visibility_graph, simplified_edges = gen_visibility_graph(start, end, polygons)
+    visibility_graph, simplified_edges = gen_visibility_graph(start, end, thick_polygons)
     # print(simplified_edges)
     # plot_visibility_graph(visibility_graph, obstacles)
     start_point = (start.x, start.y)

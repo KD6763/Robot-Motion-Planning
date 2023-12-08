@@ -55,7 +55,7 @@ def genreate():
     print(num_obstacles)
     radius = 5
     # print(num_obstacles)
-    start, end, polygons, obstacles, thick_polygons = s.setup_env(abs(int(num_obstacles)), int(radius))
+    start, end, polygons, obstacles, thick_polygons = s.setup_env(abs(int(num_obstacles)), int(radius), True)
     path, obstacles, simplified_edges = s.simulate(start, end, polygons, obstacles, thick_polygons)
     result = [data, json.loads(obstacles), json.loads(simplified_edges), json.loads(path)]
     # print(result)
