@@ -487,12 +487,13 @@
                     pathData = convertLinesToPath(objects[3]);
                     console.log(pathData);
                     moveRobot(pathData);
+                    setTimeout(enableAll, 7000);
                 }
                 else {
                     // $('#output3').text("NULL");
                     console.log("shortest error");
+                    enableAll();
                 }
-                enableAll();
             }
 
             function convertLinesToPath(lines) {
