@@ -6,7 +6,7 @@ robot's planned path and the surrounding environment.
 
 ## Implementation
 ```markdown
-[Robot Motion Planning](file:///E:/CSCI-716/Project/Website/index.html)
+[Robot Motion Planning](https://cs.rit.edu/~ak6491/csci716/index.html)
 ````
 
 ## References
