@@ -14,6 +14,6 @@ robot's planned path and the surrounding environment.
 ````
 
 ## Authors
-[Anurag Kalluwar](https://github.com/KD6763)
-[Kedar Fitwe](https://github.com/GodKira1997)
-[Neel Chaundary](https://github.com/neelchaudhary)
+* [Anurag Kalluwar](https://github.com/KD6763)
+* [Kedar Fitwe](https://github.com/GodKira1997)
+* [Neel Chaundary](https://github.com/neelchaudhary)
