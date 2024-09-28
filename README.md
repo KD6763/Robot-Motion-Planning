@@ -10,7 +10,7 @@ robot's planned path and the surrounding environment.
 ## References
 ```markdown
 1. L Computational Geometry: Algorithms and Applications. Third Edition. By Mark de Berg, Otfried Cheong, Marc van Kreveld, Mark Overmars. – Chapter 13
-2. [J. Wang and M. Q. . -H. Meng, "Optimal Path Planning Using Generalized Voronoi Graph and Multiple Potential Functions," in IEEE Transactions on Industrial Electronics, vol. 67, no. 12, pp. 10621-10630, Dec. 2020, doi: 10.1109/TIE.2019.2962425.](https://ieeexplore.ieee.org/document/8948325)
+2. [J. Wang and M. Q. -H. Meng, "Optimal Path Planning Using Generalized Voronoi Graph and Multiple Potential Functions," in IEEE Transactions on Industrial Electronics, vol. 67, no. 12, pp. 10621-10630, Dec. 2020, doi: 10.1109/TIE.2019.2962425.](https://ieeexplore.ieee.org/document/8948325)
 ````
 
 ## Authors
