@@ -5,9 +5,7 @@ techniques such as Voronoi diagrams or visibility graphs (and might explore RRT)
 robot's planned path and the surrounding environment.
 
 ## Implementation
-```markdown
 [Robot Motion Planning](https://cs.rit.edu/~ak6491/csci716/index.html)
-````
 
 ## References
 ```markdown
@@ -15,3 +13,7 @@ robot's planned path and the surrounding environment.
 2. [J. Wang and M. Q. . -H. Meng, "Optimal Path Planning Using Generalized Voronoi Graph and Multiple Potential Functions," in IEEE Transactions on Industrial Electronics, vol. 67, no. 12, pp. 10621-10630, Dec. 2020, doi: 10.1109/TIE.2019.2962425.](https://ieeexplore.ieee.org/document/8948325)
 ````
 
+## Authors
+[Anurag Kalluwar](https://github.com/KD6763)
+[Kedar Fitwe](https://github.com/GodKira1997)
+[Neel Chaundary](https://github.com/neelchaudhary)
